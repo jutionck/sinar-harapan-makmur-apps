@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -46,6 +47,24 @@ func NewDbConnection(cfg *Config) (DbConnection, error) {
 		cfg: cfg,
 	}
 	err := conn.initDb()
+	if cfg.FileConfig.Env == "MIGRATION" {
+		conn.db = conn.Conn().Debug()
+		err := conn.Migrate(
+			&model.Brand{},
+			&model.Vehicle{},
+			&model.UserCredential{},
+			&model.Customer{},
+			&model.Employee{},
+			&model.Transaction{},
+		)
+		if err != nil {
+			return nil, err
+		}
+	} else if cfg.FileConfig.Env == "DEV" {
+		conn.db = conn.Conn().Debug()
+	} else {
+		// production / release
+	}
 	if err != nil {
 		return nil, err
 	}

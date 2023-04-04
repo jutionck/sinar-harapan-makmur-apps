@@ -2,8 +2,8 @@ package model
 
 type Brand struct {
 	BaseModel
-	Name    string
-	Vehicle []Vehicle
+	Name    string    `json:"name"`
+	Vehicle []Vehicle `json:"vehicle,omitempty"`
 }
 
 func (Brand) TableName() string {

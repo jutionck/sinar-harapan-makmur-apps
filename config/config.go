@@ -7,17 +7,27 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type ApiConfig struct {
+	ApiPort string
+	ApiHost string
+}
 type DbConfig struct {
 	Host     string
 	Port     string
 	Name     string
 	User     string
 	Password string
-	Driver   string
+}
+
+type FileConfig struct {
+	FilePath string
+	Env      string
 }
 
 type Config struct {
 	DbConfig
+	ApiConfig
+	FileConfig
 }
 
 func (c *Config) ReadConfigFile() error {
@@ -32,11 +42,19 @@ func (c *Config) ReadConfigFile() error {
 		Name:     os.Getenv("DB_NAME"),
 		User:     os.Getenv("DB_USER"),
 		Password: os.Getenv("DB_PASSWORD"),
-		Driver:   os.Getenv("DB_DRIVER"),
+	}
+
+	c.ApiConfig = ApiConfig{
+		ApiHost: os.Getenv("API_HOST"),
+		ApiPort: os.Getenv("API_PORT"),
+	}
+
+	c.FileConfig = FileConfig{
+		Env: os.Getenv("ENV"),
 	}
 
 	if c.DbConfig.Host == "" || c.DbConfig.Port == "" || c.DbConfig.Name == "" ||
-		c.DbConfig.User == "" || c.DbConfig.Password == "" || c.DbConfig.Driver == "" {
+		c.DbConfig.User == "" || c.DbConfig.Password == "" || c.ApiConfig.ApiHost == "" || c.ApiConfig.ApiPort == "" || c.FileConfig.Env == "" {
 		return errors.New("missing required environment variables")
 	}
 
