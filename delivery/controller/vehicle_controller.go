@@ -42,8 +42,8 @@ func (v *VehicleController) listHandler(c *gin.Context) {
 		v.NewFailedResponse(c, http.StatusBadRequest, "invalid limit number")
 		return
 	}
-	order := c.DefaultQuery("order", "id")
-	sort := c.DefaultQuery("sort", "asc")
+	order := c.DefaultQuery("order", "created_at")
+	sort := c.DefaultQuery("sort", "desc")
 	requestQueryParams := dto.RequestQueryParams{
 		QueryParams: dto.QueryParams{
 			Sort:  sort,

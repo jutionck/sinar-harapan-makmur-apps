@@ -20,7 +20,7 @@ type vehicleRepository struct {
 
 func (v *vehicleRepository) Search(by map[string]interface{}) ([]model.Vehicle, error) {
 	var vehicles []model.Vehicle
-	result := v.db.Where(by).Find(&vehicles)
+	result := v.db.Preload("Brand").Where(by).Find(&vehicles)
 	if err := result.Error; err != nil {
 		return vehicles, err
 	}
@@ -29,7 +29,7 @@ func (v *vehicleRepository) Search(by map[string]interface{}) ([]model.Vehicle, 
 
 func (v *vehicleRepository) List() ([]model.Vehicle, error) {
 	var vehicles []model.Vehicle
-	result := v.db.Find(&vehicles)
+	result := v.db.Preload("Brand").Find(&vehicles)
 	if err := result.Error; err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (v *vehicleRepository) List() ([]model.Vehicle, error) {
 
 func (v *vehicleRepository) Get(id string) (*model.Vehicle, error) {
 	var vehicle model.Vehicle
-	result := v.db.First(&vehicle, "id = ?", id)
+	result := v.db.Preload("Brand").First(&vehicle, "id = ?", id)
 	if err := result.Error; err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (v *vehicleRepository) UpdateStock(count int, id string) error {
 func (v *vehicleRepository) Paging(requestQueryParams dto.RequestQueryParams) ([]model.Vehicle, dto.Paging, error) {
 	paginationQuery, orderQuery := v.pagingValidate(requestQueryParams)
 	var vehicles []model.Vehicle
-	result := v.db.Order(orderQuery).Limit(paginationQuery.Take).Offset(paginationQuery.Skip).Find(&vehicles).Error
+	result := v.db.Preload("Brand").Order(orderQuery).Limit(paginationQuery.Take).Offset(paginationQuery.Skip).Find(&vehicles).Error
 	if result != nil {
 		return nil, dto.Paging{}, result
 	}
