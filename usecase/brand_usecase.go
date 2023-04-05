@@ -38,6 +38,16 @@ func (b *brandUseCase) FindById(id string) (*model.Brand, error) {
 }
 
 func (b *brandUseCase) SaveData(payload *model.Brand) error {
+	err := payload.Validate()
+	if err != nil {
+		return err
+	}
+	// cek jika data sudah ada -> count > 0
+	err = b.repo.CountData(payload.Name, payload.ID)
+	if err != nil {
+		return err
+	}
+
 	if payload.ID != "" {
 		_, err := b.FindById(payload.ID)
 		if err != nil {

@@ -1,5 +1,7 @@
 package model
 
+import validation "github.com/go-ozzo/ozzo-validation"
+
 type Brand struct {
 	BaseModel
 	Name    string    `json:"name"`
@@ -8,4 +10,10 @@ type Brand struct {
 
 func (Brand) TableName() string {
 	return "mst_brand"
+}
+
+func (b Brand) Validate() error {
+	return validation.ValidateStruct(&b,
+		validation.Field(&b.Name, validation.Required, validation.Length(3, 35)),
+	)
 }

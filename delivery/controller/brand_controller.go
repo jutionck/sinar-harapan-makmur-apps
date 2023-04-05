@@ -18,10 +18,12 @@ func (b *BrandController) createHandler(c *gin.Context) {
 		// AbortWithStatusJSON -> untuk menghentikan proses request dan otomatis akan keluar dari function
 		// jadi tidak memerlukan return
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	if err := b.useCase.SaveData(&payload); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusCreated, payload)
@@ -77,6 +79,7 @@ func (b *BrandController) updateHandler(c *gin.Context) {
 
 	if err := b.useCase.SaveData(&payload); err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, payload)

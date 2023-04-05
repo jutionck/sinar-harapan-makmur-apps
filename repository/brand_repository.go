@@ -1,12 +1,14 @@
 package repository
 
 import (
+	"fmt"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
 	"gorm.io/gorm"
 )
 
 type BrandRepository interface {
 	BaseRepository[model.Brand]
+	BaseRepositoryCount[model.Brand]
 	ListBrandWithVehicle() ([]model.Brand, error)
 	GetBrandWithVehicle(brandId string) (*model.Brand, error)
 }
@@ -66,6 +68,25 @@ func (b *brandRepository) ListBrandWithVehicle() ([]model.Brand, error) {
 		return nil, result
 	}
 	return brands, nil
+}
+
+func (b *brandRepository) CountData(fieldName string, id string) error {
+	var count int64
+	var result *gorm.DB
+	if id != "" {
+		result = b.db.Model(&model.Brand{}).Where("name ILIKE ? AND id <> ?", "%"+fieldName+"%", id).Count(&count)
+	} else {
+		result = b.db.Model(&model.Brand{}).Where("name ILIKE ?", "%"+fieldName+"%").Count(&count)
+	}
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if count > 0 {
+		return fmt.Errorf("field with name %s already exists", fieldName)
+	}
+	return nil
 }
 
 func NewBrandRepository(db *gorm.DB) BrandRepository {
