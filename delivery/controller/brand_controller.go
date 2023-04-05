@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/delivery/api/response"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/delivery/api"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase"
 	"net/http"
@@ -11,40 +11,41 @@ import (
 type BrandController struct {
 	router  *gin.Engine
 	useCase usecase.BrandUseCase
+	api.BaseApi
 }
 
 func (b *BrandController) createHandler(c *gin.Context) {
 	var payload model.Brand
-	if err := c.ShouldBind(&payload); err != nil {
-		response.SendErrorResponse(c, http.StatusBadRequest, err.Error())
+	if err := b.ParseRequestBody(c, &payload); err != nil {
+		b.NewFailedResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := b.useCase.SaveData(&payload); err != nil {
-		response.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
+		b.NewFailedResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	response.SendSingleResponse(c, payload, "OK")
+	b.NewSuccessSingleResponse(c, payload, "OK")
 }
 
 func (b *BrandController) listHandler(c *gin.Context) {
 	brands, err := b.useCase.FindAll()
 	if err != nil {
-		response.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
+		b.NewFailedResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	response.SendSingleResponse(c, brands, "OK")
+	b.NewSuccessSingleResponse(c, brands, "OK")
 }
 
 func (b *BrandController) getHandler(c *gin.Context) {
 	id := c.Param("id")
 	brand, err := b.useCase.FindById(id)
 	if err != nil {
-		response.SendErrorResponse(c, http.StatusNotFound, err.Error())
+		b.NewFailedResponse(c, http.StatusNotFound, err.Error())
 		return
 	}
-	response.SendSingleResponse(c, brand, "OK")
+	b.NewSuccessSingleResponse(c, brand, "OK")
 }
 
 func (b *BrandController) searchHandler(c *gin.Context) {
@@ -53,32 +54,32 @@ func (b *BrandController) searchHandler(c *gin.Context) {
 	filter := map[string]interface{}{"name": name}
 	brands, err := b.useCase.SearchBy(filter)
 	if err != nil {
-		response.SendErrorResponse(c, http.StatusNotFound, err.Error())
+		b.NewFailedResponse(c, http.StatusNotFound, err.Error())
 		return
 	}
-	response.SendSingleResponse(c, brands, "OK")
+	b.NewSuccessSingleResponse(c, brands, "OK")
 }
 
 func (b *BrandController) updateHandler(c *gin.Context) {
 	var payload model.Brand
-	if err := c.ShouldBind(&payload); err != nil {
-		response.SendErrorResponse(c, http.StatusBadRequest, err.Error())
+	if err := b.ParseRequestBody(c, &payload); err != nil {
+		b.NewFailedResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if err := b.useCase.SaveData(&payload); err != nil {
-		response.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
+		b.NewFailedResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	response.SendSingleResponse(c, payload, "OK")
+	b.NewSuccessSingleResponse(c, payload, "OK")
 }
 
 func (b *BrandController) deleteHandler(c *gin.Context) {
 	id := c.Param("id")
 	err := b.useCase.DeleteData(id)
 	if err != nil {
-		response.SendErrorResponse(c, http.StatusInternalServerError, err.Error())
+		b.NewFailedResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.String(http.StatusNoContent, "")

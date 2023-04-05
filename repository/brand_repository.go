@@ -74,9 +74,9 @@ func (b *brandRepository) CountData(fieldName string, id string) error {
 	var count int64
 	var result *gorm.DB
 	if id != "" {
-		result = b.db.Model(&model.Brand{}).Where("name ILIKE ? AND id <> ?", "%"+fieldName+"%", id).Count(&count)
+		result = b.db.Unscoped().Model(&model.Brand{}).Where("name ILIKE ? AND id <> ?", "%"+fieldName+"%", id).Count(&count)
 	} else {
-		result = b.db.Model(&model.Brand{}).Where("name ILIKE ?", "%"+fieldName+"%").Count(&count)
+		result = b.db.Unscoped().Model(&model.Brand{}).Where("name ILIKE ?", "%"+fieldName+"%").Count(&count)
 	}
 
 	if result.Error != nil {
