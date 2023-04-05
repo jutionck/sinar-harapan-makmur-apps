@@ -4,8 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/delivery/api"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model/dto"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase"
 	"net/http"
+	"strconv"
 )
 
 type BrandController struct {
@@ -30,12 +32,38 @@ func (b *BrandController) createHandler(c *gin.Context) {
 }
 
 func (b *BrandController) listHandler(c *gin.Context) {
-	brands, err := b.useCase.FindAll()
+	page, err := strconv.Atoi(c.Query("page"))
+	if err != nil {
+		b.NewFailedResponse(c, http.StatusBadRequest, "invalid page number")
+		return
+	}
+	limit, err := strconv.Atoi(c.Query("limit"))
+	if err != nil {
+		b.NewFailedResponse(c, http.StatusBadRequest, "invalid limit number")
+		return
+	}
+	order := c.Query("order")
+	sort := c.Query("sort")
+	requestQueryParams := dto.RequestQueryParams{
+		QueryParams: dto.QueryParams{
+			Sort:  sort,
+			Order: order,
+		},
+		PaginationParam: dto.PaginationParam{
+			Page:  page,
+			Limit: limit,
+		},
+	}
+	brands, paging, err := b.useCase.Paging(requestQueryParams)
 	if err != nil {
 		b.NewFailedResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	b.NewSuccessSingleResponse(c, brands, "OK")
+	var brandInterface []interface{}
+	for _, b := range brands {
+		brandInterface = append(brandInterface, b)
+	}
+	b.NewSuccessPagedResponse(c, brandInterface, "OK", paging)
 }
 
 func (b *BrandController) getHandler(c *gin.Context) {

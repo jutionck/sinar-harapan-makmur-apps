@@ -1,5 +1,7 @@
 package repository
 
+import "github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model/dto"
+
 type BaseRepository[T any] interface {
 	Search(by map[string]interface{}) ([]T, error)
 	List() ([]T, error)
@@ -15,4 +17,8 @@ type BaseRepositoryEmailPhone[T any] interface {
 
 type BaseRepositoryCount[T any] interface {
 	CountData(fieldName string, id string) error
+}
+
+type BaseRepositoryPaging[T any] interface {
+	Paging(requestQueryParams dto.RequestQueryParams) ([]T, dto.Paging, error)
 }

@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model/dto"
 
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/repository"
@@ -11,6 +12,7 @@ type BrandUseCase interface {
 	BaseUseCase[model.Brand]
 	FindAllBrandWithVehicle() ([]model.Brand, error)
 	FindByBrandWithVehicle(brandId string) (*model.Brand, error)
+	Paging(requestQueryParams dto.RequestQueryParams) ([]model.Brand, dto.Paging, error)
 }
 
 type brandUseCase struct {
@@ -75,6 +77,13 @@ func (b *brandUseCase) FindByBrandWithVehicle(brandId string) (*model.Brand, err
 		return nil, fmt.Errorf("brand with ID %s not found", brandId)
 	}
 	return b.repo.GetBrandWithVehicle(brand.ID)
+}
+
+func (b *brandUseCase) Paging(requestQueryParams dto.RequestQueryParams) ([]model.Brand, dto.Paging, error) {
+	if !requestQueryParams.QueryParams.IsSortValid() {
+		return nil, dto.Paging{}, fmt.Errorf("invalid sort by: %s", requestQueryParams.QueryParams.Sort)
+	}
+	return b.repo.Paging(requestQueryParams)
 }
 
 func NewBrandUseCase(repo repository.BrandRepository) BrandUseCase {
