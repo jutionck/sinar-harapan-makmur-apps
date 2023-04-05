@@ -93,7 +93,7 @@ func (b *brandRepository) CountData(fieldName string, id string) error {
 }
 
 func (b *brandRepository) Paging(requestQueryParams dto.RequestQueryParams) ([]model.Brand, dto.Paging, error) {
-	paginationQuery, orderQuery := pagingValidate(requestQueryParams)
+	paginationQuery, orderQuery := b.pagingValidate(requestQueryParams)
 	var brands []model.Brand
 	result := b.db.Order(orderQuery).Limit(paginationQuery.Take).Offset(paginationQuery.Skip).Find(&brands).Error
 	if result != nil {
@@ -107,7 +107,7 @@ func (b *brandRepository) Paging(requestQueryParams dto.RequestQueryParams) ([]m
 	return brands, common.Paginate(paginationQuery.Page, paginationQuery.Take, int(totalRows)), nil
 }
 
-func pagingValidate(requestQueryParams dto.RequestQueryParams) (dto.PaginationQuery, string) {
+func (b *brandRepository) pagingValidate(requestQueryParams dto.RequestQueryParams) (dto.PaginationQuery, string) {
 	var paginationQuery dto.PaginationQuery
 	paginationQuery = common.GetPaginationParams(requestQueryParams.PaginationParam)
 	orderQuery := "id"

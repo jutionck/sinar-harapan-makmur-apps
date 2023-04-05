@@ -1,0 +1,127 @@
+package controller
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/delivery/api"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model/dto"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase"
+	"net/http"
+	"strconv"
+)
+
+type VehicleController struct {
+	router  *gin.Engine
+	useCase usecase.VehicleUseCase
+	api.BaseApi
+}
+
+func (v *VehicleController) createHandler(c *gin.Context) {
+	var payload model.Vehicle
+	if err := v.ParseRequestBody(c, &payload); err != nil {
+		v.NewFailedResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := v.useCase.SaveData(&payload); err != nil {
+		v.NewFailedResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	v.NewSuccessSingleResponse(c, payload, "OK")
+}
+
+func (v *VehicleController) listHandler(c *gin.Context) {
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil {
+		v.NewFailedResponse(c, http.StatusBadRequest, "invalid page number")
+		return
+	}
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "20"))
+	if err != nil {
+		v.NewFailedResponse(c, http.StatusBadRequest, "invalid limit number")
+		return
+	}
+	order := c.DefaultQuery("order", "id")
+	sort := c.DefaultQuery("sort", "asc")
+	requestQueryParams := dto.RequestQueryParams{
+		QueryParams: dto.QueryParams{
+			Sort:  sort,
+			Order: order,
+		},
+		PaginationParam: dto.PaginationParam{
+			Page:  page,
+			Limit: limit,
+		},
+	}
+	vehicles, paging, err := v.useCase.Paging(requestQueryParams)
+	if err != nil {
+		v.NewFailedResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	var vehicleInterface []interface{}
+	for _, b := range vehicles {
+		vehicleInterface = append(vehicleInterface, b)
+	}
+	v.NewSuccessPagedResponse(c, vehicleInterface, "OK", paging)
+}
+
+func (v *VehicleController) getHandler(c *gin.Context) {
+	id := c.Param("id")
+	vehicle, err := v.useCase.FindById(id)
+	if err != nil {
+		v.NewFailedResponse(c, http.StatusNotFound, err.Error())
+		return
+	}
+	v.NewSuccessSingleResponse(c, vehicle, "OK")
+}
+
+func (v *VehicleController) searchHandler(c *gin.Context) {
+	name := c.Query("model")
+	filter := map[string]interface{}{"model": name}
+	vehicles, err := v.useCase.SearchBy(filter)
+	if err != nil {
+		v.NewFailedResponse(c, http.StatusNotFound, err.Error())
+		return
+	}
+	v.NewSuccessSingleResponse(c, vehicles, "OK")
+}
+
+func (v *VehicleController) updateHandler(c *gin.Context) {
+	var payload model.Vehicle
+	if err := v.ParseRequestBody(c, &payload); err != nil {
+		v.NewFailedResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := v.useCase.SaveData(&payload); err != nil {
+		v.NewFailedResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	v.NewSuccessSingleResponse(c, payload, "OK")
+}
+
+func (v *VehicleController) deleteHandler(c *gin.Context) {
+	id := c.Param("id")
+	err := v.useCase.DeleteData(id)
+	if err != nil {
+		v.NewFailedResponse(c, http.StatusNotFound, err.Error())
+		return
+	}
+	c.String(http.StatusNoContent, "")
+}
+
+func NewVehicleController(r *gin.Engine, useCase usecase.VehicleUseCase) *VehicleController {
+	controller := &VehicleController{
+		router:  r,
+		useCase: useCase,
+	}
+	r.GET("/vehicles", controller.listHandler)
+	r.GET("/vehicles/:id", controller.getHandler)
+	r.GET("/vehicles/search", controller.searchHandler)
+	r.POST("/vehicles", controller.createHandler)
+	r.PUT("/vehicles", controller.updateHandler)
+	r.DELETE("/vehicles/:id", controller.deleteHandler)
+	return controller
+}

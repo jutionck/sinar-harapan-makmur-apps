@@ -32,18 +32,18 @@ func (b *BrandController) createHandler(c *gin.Context) {
 }
 
 func (b *BrandController) listHandler(c *gin.Context) {
-	page, err := strconv.Atoi(c.Query("page"))
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 	if err != nil {
 		b.NewFailedResponse(c, http.StatusBadRequest, "invalid page number")
 		return
 	}
-	limit, err := strconv.Atoi(c.Query("limit"))
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "20"))
 	if err != nil {
 		b.NewFailedResponse(c, http.StatusBadRequest, "invalid limit number")
 		return
 	}
-	order := c.Query("order")
-	sort := c.Query("sort")
+	order := c.DefaultQuery("order", "id")
+	sort := c.DefaultQuery("sort", "asc")
 	requestQueryParams := dto.RequestQueryParams{
 		QueryParams: dto.QueryParams{
 			Sort:  sort,

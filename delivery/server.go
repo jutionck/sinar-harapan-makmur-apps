@@ -11,13 +11,15 @@ import (
 )
 
 type Server struct {
-	brandUC usecase.BrandUseCase
-	engine  *gin.Engine
-	host    string
+	brandUC   usecase.BrandUseCase
+	vehicleUC usecase.VehicleUseCase
+	engine    *gin.Engine
+	host      string
 }
 
 func (s *Server) initController() {
 	controller.NewBrandController(s.engine, s.brandUC)
+	controller.NewVehicleController(s.engine, s.vehicleUC)
 }
 
 func (s *Server) Run() {
@@ -42,12 +44,15 @@ func NewServer() *Server {
 	db := dbConn.Conn()
 	r := gin.Default()
 	brandRepo := repository.NewBrandRepository(db)
+	vehicleRepo := repository.NewVehicleRepository(db)
 	brandUc := usecase.NewBrandUseCase(brandRepo)
+	vehicleUC := usecase.NewVehicleUseCase(vehicleRepo, brandUc)
 	host := fmt.Sprintf("%s:%s", cfg.ApiHost, cfg.ApiPort)
 	return &Server{
-		brandUC: brandUc,
-		engine:  r,
-		host:    host,
+		brandUC:   brandUc,
+		vehicleUC: vehicleUC,
+		engine:    r,
+		host:      host,
 	}
 
 }
