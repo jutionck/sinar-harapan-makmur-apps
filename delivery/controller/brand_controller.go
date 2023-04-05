@@ -52,6 +52,21 @@ func (b *BrandController) getHandler(c *gin.Context) {
 	})
 }
 
+func (b *BrandController) searchHandler(c *gin.Context) {
+	//name := c.Query("name")
+	name := c.DefaultQuery("name", "Honda") // memberikan default query -> Honda (case sensitive)
+	filter := map[string]interface{}{"name": name}
+	brands, err := b.useCase.SearchBy(filter)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code":        200,
+		"description": "Ok",
+		"data":        brands,
+	})
+}
+
 func (b *BrandController) updateHandler(c *gin.Context) {
 	var payload model.Brand
 	if err := c.ShouldBind(&payload); err != nil {
@@ -83,6 +98,7 @@ func NewBrandController(r *gin.Engine, useCase usecase.BrandUseCase) *BrandContr
 	}
 	r.GET("/brands", controller.listHandler)
 	r.GET("/brands/:id", controller.getHandler)
+	r.GET("/brands/search", controller.searchHandler)
 	r.POST("/brands", controller.createHandler)
 	r.PUT("/brands", controller.updateHandler)
 	r.DELETE("/brands/:id", controller.deleteHandler)
