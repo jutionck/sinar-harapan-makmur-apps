@@ -54,7 +54,7 @@ func (v *VehicleController) listHandler(c *gin.Context) {
 			Limit: limit,
 		},
 	}
-	vehicles, paging, err := v.useCase.Paging(requestQueryParams)
+	vehicles, paging, err := v.useCase.Pagination(requestQueryParams)
 	if err != nil {
 		v.NewFailedResponse(c, http.StatusInternalServerError, err.Error())
 		return

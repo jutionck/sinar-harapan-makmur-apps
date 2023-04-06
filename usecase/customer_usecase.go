@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"fmt"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model/dto"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/utils"
 
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/repository"
@@ -10,6 +12,8 @@ import (
 type CustomerUseCase interface {
 	BaseUseCase[model.Customer]
 	BaseUseCaseEmailPhone[model.Customer]
+	BaseUseCasePaging[model.Customer]
+	AppendCustomerVehicle(payload *model.Customer, association interface{}) error
 }
 
 type customerUseCase struct {
@@ -40,10 +44,22 @@ func (c *customerUseCase) SaveData(payload *model.Customer) error {
 	if payload.ID != "" {
 		_, err := c.FindById(payload.ID)
 		if err != nil {
-			return fmt.Errorf("Customer with ID %s not found!", payload.ID)
+			return fmt.Errorf("customer with ID %s not found", payload.ID)
 		}
 	}
-
+	// create new user credential, set with default password ex: bod, 12345, password ...
+	password, err := utils.HashPassword("password")
+	if err != nil {
+		return err
+	}
+	// define model user credential
+	// Harus di cek dulu user sudah ada atau belum
+	userCredential := model.UserCredential{
+		UserName: payload.Email, // unique
+		Password: password,
+		IsActive: false,
+	}
+	payload.UserCredential = userCredential
 	return c.repo.Save(payload)
 }
 
@@ -69,6 +85,17 @@ func (c *customerUseCase) FindByPhone(phone string) (*model.Customer, error) {
 		return nil, fmt.Errorf("Customer with phone number %s not found!", phone)
 	}
 	return customer, nil
+}
+
+func (c *customerUseCase) Pagination(requestQueryParams dto.RequestQueryParams) ([]model.Customer, dto.Paging, error) {
+	if !requestQueryParams.QueryParams.IsSortValid() {
+		return nil, dto.Paging{}, fmt.Errorf("invalid sort by: %s", requestQueryParams.QueryParams.Sort)
+	}
+	return c.repo.Paging(requestQueryParams)
+}
+
+func (c *customerUseCase) AppendCustomerVehicle(payload *model.Customer, association interface{}) error {
+	return c.repo.CreateCustomerVehicle(payload, association)
 }
 
 func NewCustomerUseCase(repo repository.CustomerRepository) CustomerUseCase {

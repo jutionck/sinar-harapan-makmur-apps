@@ -54,7 +54,7 @@ func (b *BrandController) listHandler(c *gin.Context) {
 			Limit: limit,
 		},
 	}
-	brands, paging, err := b.useCase.Paging(requestQueryParams)
+	brands, paging, err := b.useCase.Pagination(requestQueryParams)
 	if err != nil {
 		b.NewFailedResponse(c, http.StatusInternalServerError, err.Error())
 		return

@@ -12,10 +12,12 @@ import (
 )
 
 type Server struct {
-	brandUC   usecase.BrandUseCase
-	vehicleUC usecase.VehicleUseCase
-	engine    *gin.Engine
-	host      string
+	brandUC       usecase.BrandUseCase
+	vehicleUC     usecase.VehicleUseCase
+	customerUC    usecase.CustomerUseCase
+	transactionUC usecase.TransactionUseCase
+	engine        *gin.Engine
+	host          string
 }
 
 func (s *Server) initController() {
@@ -23,6 +25,8 @@ func (s *Server) initController() {
 	s.engine.Use(middleware.LogRequestMiddleware())
 	controller.NewBrandController(s.engine, s.brandUC)
 	controller.NewVehicleController(s.engine, s.vehicleUC)
+	controller.NewCustomerController(s.engine, s.customerUC)
+	controller.NewTransactionController(s.engine, s.transactionUC)
 }
 
 func (s *Server) Run() {
@@ -48,14 +52,22 @@ func NewServer() *Server {
 	r := gin.Default()
 	brandRepo := repository.NewBrandRepository(db)
 	vehicleRepo := repository.NewVehicleRepository(db)
+	customerRepo := repository.NewCustomerRepository(db)
+	employeeRepo := repository.NewEmployeeRepository(db)
+	transactionRepo := repository.NewTransactionRepository(db)
 	brandUc := usecase.NewBrandUseCase(brandRepo)
 	vehicleUC := usecase.NewVehicleUseCase(vehicleRepo, brandUc)
+	customerUC := usecase.NewCustomerUseCase(customerRepo)
+	employeeUC := usecase.NewEmployeeUseCase(employeeRepo)
+	transactionUC := usecase.NewTransactionUseCase(transactionRepo, vehicleUC, employeeUC, customerUC)
 	host := fmt.Sprintf("%s:%s", cfg.ApiHost, cfg.ApiPort)
 	return &Server{
-		brandUC:   brandUc,
-		vehicleUC: vehicleUC,
-		engine:    r,
-		host:      host,
+		brandUC:       brandUc,
+		vehicleUC:     vehicleUC,
+		customerUC:    customerUC,
+		transactionUC: transactionUC,
+		engine:        r,
+		host:          host,
 	}
 
 }

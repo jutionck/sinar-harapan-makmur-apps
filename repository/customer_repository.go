@@ -1,19 +1,33 @@
 package repository
 
 import (
+	"fmt"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model/dto"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/utils/common"
 	"gorm.io/gorm"
 )
 
 type CustomerRepository interface {
 	BaseRepository[model.Customer]
+	BaseRepositoryPaging[model.Customer]
+	BaseRepositoryEmailPhone[model.Customer]
 	ListCustomerUser() ([]model.Customer, error)
 	GetByUser(userId string) (*model.Customer, error)
-	BaseRepositoryEmailPhone[model.Customer]
+	CreateCustomerVehicle(payload *model.Customer, association interface{}) error
 }
 
 type customerRepository struct {
 	db *gorm.DB
+}
+
+func (c *customerRepository) CreateCustomerVehicle(payload *model.Customer, association interface{}) error {
+	vehicle := association.(*model.Vehicle) // casting interface to struct vehicle
+	result := c.db.Model(payload).Association("Vehicles").Append(vehicle)
+	if result != nil {
+		return result
+	}
+	return nil
 }
 
 func (c *customerRepository) Search(by map[string]interface{}) ([]model.Customer, error) {
@@ -87,6 +101,35 @@ func (c *customerRepository) GetByPhone(phone string) (*model.Customer, error) {
 		return nil, result
 	}
 	return &customer, nil
+}
+
+func (c *customerRepository) Paging(requestQueryParams dto.RequestQueryParams) ([]model.Customer, dto.Paging, error) {
+	paginationQuery, orderQuery := c.pagingValidate(requestQueryParams)
+	var customers []model.Customer
+	result := c.db.Preload("UserCredential").Order(orderQuery).Limit(paginationQuery.Take).Offset(paginationQuery.Skip).Find(&customers).Error
+	if result != nil {
+		return nil, dto.Paging{}, result
+	}
+	var totalRows int64
+	result = c.db.Model(&model.Customer{}).Count(&totalRows).Error
+	if result != nil {
+		return nil, dto.Paging{}, result
+	}
+	return customers, common.Paginate(paginationQuery.Page, paginationQuery.Take, int(totalRows)), nil
+}
+
+func (c *customerRepository) pagingValidate(requestQueryParams dto.RequestQueryParams) (dto.PaginationQuery, string) {
+	var paginationQuery dto.PaginationQuery
+	paginationQuery = common.GetPaginationParams(requestQueryParams.PaginationParam)
+	orderQuery := "id"
+	if requestQueryParams.QueryParams.Order != "" && requestQueryParams.QueryParams.Sort != "" {
+		sorting := "ASC"
+		if requestQueryParams.QueryParams.Sort == "desc" {
+			sorting = "DESC"
+		}
+		orderQuery = fmt.Sprintf("%s %s", requestQueryParams.QueryParams.Order, sorting)
+	}
+	return paginationQuery, orderQuery
 }
 
 func NewCustomerRepository(db *gorm.DB) CustomerRepository {

@@ -10,7 +10,7 @@ import (
 
 type VehicleUseCase interface {
 	BaseUseCase[model.Vehicle]
-	Paging(requestQueryParams dto.RequestQueryParams) ([]model.Vehicle, dto.Paging, error)
+	BaseUseCasePaging[model.Vehicle]
 	UpdateVehicleStock(count int, id string) error
 }
 
@@ -66,7 +66,7 @@ func (v *vehicleUseCase) UpdateVehicleStock(count int, id string) error {
 	return v.repo.UpdateStock(count, id)
 }
 
-func (v *vehicleUseCase) Paging(requestQueryParams dto.RequestQueryParams) ([]model.Vehicle, dto.Paging, error) {
+func (v *vehicleUseCase) Pagination(requestQueryParams dto.RequestQueryParams) ([]model.Vehicle, dto.Paging, error) {
 	if !requestQueryParams.QueryParams.IsSortValid() {
 		return nil, dto.Paging{}, fmt.Errorf("invalid sort by: %s", requestQueryParams.QueryParams.Sort)
 	}

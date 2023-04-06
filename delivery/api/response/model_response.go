@@ -14,6 +14,6 @@ type SingleResponse struct {
 
 type PagedResponse struct {
 	Status Status        `json:"status"`
-	Data   []interface{} `json:"data"`
+	Data   []interface{} `json:"data,omitempty"`
 	Paging dto.Paging    `json:"paging,omitempty"`
 }
