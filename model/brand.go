@@ -4,8 +4,8 @@ import validation "github.com/go-ozzo/ozzo-validation"
 
 type Brand struct {
 	BaseModel
-	Name    string    `json:"name"`
-	Vehicle []Vehicle `json:"vehicle,omitempty"`
+	Name     string    `json:"name"`
+	Vehicles []Vehicle `json:"vehicles,omitempty"`
 }
 
 func (Brand) TableName() string {

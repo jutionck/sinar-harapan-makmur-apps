@@ -10,9 +10,9 @@ import (
 
 type BrandUseCase interface {
 	BaseUseCase[model.Brand]
-	FindAllBrandWithVehicle() ([]model.Brand, error)
-	FindByBrandWithVehicle(brandId string) (*model.Brand, error)
 	Paging(requestQueryParams dto.RequestQueryParams) ([]model.Brand, dto.Paging, error)
+	// FindAllBrandWithVehicle() ([]model.Brand, error)
+	// FindByBrandWithVehicle(brandId string) (*model.Brand, error)
 }
 
 type brandUseCase struct {
@@ -67,17 +67,17 @@ func (b *brandUseCase) SearchBy(by map[string]interface{}) ([]model.Brand, error
 	return brands, nil
 }
 
-func (b *brandUseCase) FindAllBrandWithVehicle() ([]model.Brand, error) {
-	return b.repo.ListBrandWithVehicle()
-}
-
-func (b *brandUseCase) FindByBrandWithVehicle(brandId string) (*model.Brand, error) {
-	brand, err := b.FindById(brandId)
-	if err != nil {
-		return nil, fmt.Errorf("brand with ID %s not found", brandId)
-	}
-	return b.repo.GetBrandWithVehicle(brand.ID)
-}
+//func (b *brandUseCase) FindAllBrandWithVehicle() ([]model.Brand, error) {
+//	return b.repo.ListBrandWithVehicle()
+//}
+//
+//func (b *brandUseCase) FindByBrandWithVehicle(brandId string) (*model.Brand, error) {
+//	brand, err := b.FindById(brandId)
+//	if err != nil {
+//		return nil, fmt.Errorf("brand with ID %s not found", brandId)
+//	}
+//	return b.repo.GetBrandWithVehicle(brand.ID)
+//}
 
 func (b *brandUseCase) Paging(requestQueryParams dto.RequestQueryParams) ([]model.Brand, dto.Paging, error) {
 	if !requestQueryParams.QueryParams.IsSortValid() {
