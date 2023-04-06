@@ -27,6 +27,9 @@ func (t *transactionRepository) List() ([]model.Transaction, error) {
 	var transactions []model.Transaction
 	// nested association => Customer.UserCredential
 	if err := t.db.
+		Preload("Vehicle.Brand").
+		Preload("Customer.UserCredential").
+		Preload("Employee.UserCredential").
 		Preload(clause.Associations).
 		Find(&transactions).Error; err != nil {
 		return nil, err
@@ -37,9 +40,10 @@ func (t *transactionRepository) List() ([]model.Transaction, error) {
 func (t *transactionRepository) Get(id string) (model.Transaction, error) {
 	var transaction model.Transaction
 	if err := t.db.
-		Preload("Vehicle").
-		Preload("Customer").
-		Preload("Employee").
+		Preload("Vehicle.Brand").
+		Preload("Customer.UserCredential").
+		Preload("Employee.UserCredential").
+		Preload(clause.Associations).
 		Where("id=?", id).
 		First(&transaction).Error; err != nil {
 		return model.Transaction{}, err
