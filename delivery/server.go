@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/config"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/delivery/controller"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/delivery/middleware"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/repository"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase"
 	"log"
@@ -18,6 +19,8 @@ type Server struct {
 }
 
 func (s *Server) initController() {
+	// add middleware
+	s.engine.Use(middleware.LogRequestMiddleware())
 	controller.NewBrandController(s.engine, s.brandUC)
 	controller.NewVehicleController(s.engine, s.vehicleUC)
 }
