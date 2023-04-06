@@ -13,6 +13,7 @@ import (
 type UserUseCase interface {
 	BaseUseCase[model.UserCredential]
 	FindUserByUsername(username string) (*model.UserCredential, error)
+	ResetPassword(payload *model.UserCredential) (string, error)
 }
 
 type userUseCase struct {
@@ -75,6 +76,22 @@ func (u *userUseCase) FindUserByUsername(username string) (*model.UserCredential
 		return nil, fmt.Errorf("User with username %s not found!", username)
 	}
 	return user, nil
+}
+
+func (u *userUseCase) ResetPassword(payload *model.UserCredential) (string, error) {
+	_, err := u.FindById(payload.ID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", fmt.Errorf("user with ID '%s' not found", payload.ID)
+		}
+		return "", fmt.Errorf("failed to check user with ID '%s': %v", payload.ID, err)
+	}
+	payload.IsActive = true
+	err = u.SaveData(payload)
+	if err != nil {
+		return "", err
+	}
+	return payload.ID, nil
 }
 
 func NewUserUseCase(repo repository.UserRepository) UserUseCase {

@@ -17,7 +17,8 @@ type CustomerUseCase interface {
 }
 
 type customerUseCase struct {
-	repo repository.CustomerRepository
+	repo   repository.CustomerRepository
+	userUC UserUseCase
 }
 
 func (c *customerUseCase) DeleteData(id string) error {
@@ -47,6 +48,7 @@ func (c *customerUseCase) SaveData(payload *model.Customer) error {
 			return fmt.Errorf("customer with ID %s not found", payload.ID)
 		}
 	}
+
 	// create new user credential, set with default password ex: bod, 12345, password ...
 	password, err := utils.HashPassword("password")
 	if err != nil {
@@ -54,12 +56,24 @@ func (c *customerUseCase) SaveData(payload *model.Customer) error {
 	}
 	// define model user credential
 	// Harus di cek dulu user sudah ada atau belum
-	userCredential := model.UserCredential{
-		UserName: payload.Email, // unique
-		Password: password,
-		IsActive: false,
+	user, err := c.userUC.FindUserByUsername(payload.Email)
+	if err != nil {
+		return err
 	}
-	payload.UserCredential = userCredential
+	if user.ID != "" {
+		payload.UserCredential = *user
+		err := c.userUC.SaveData(user)
+		if err != nil {
+			return err
+		}
+	} else {
+		userCredential := model.UserCredential{
+			UserName: payload.Email, // unique
+			Password: password,
+			IsActive: false,
+		}
+		payload.UserCredential = userCredential
+	}
 	return c.repo.Save(payload)
 }
 
@@ -98,6 +112,12 @@ func (c *customerUseCase) AppendCustomerVehicle(payload *model.Customer, associa
 	return c.repo.CreateCustomerVehicle(payload, association)
 }
 
-func NewCustomerUseCase(repo repository.CustomerRepository) CustomerUseCase {
-	return &customerUseCase{repo: repo}
+func NewCustomerUseCase(
+	repo repository.CustomerRepository,
+	userUC UserUseCase,
+) CustomerUseCase {
+	return &customerUseCase{
+		repo:   repo,
+		userUC: userUC,
+	}
 }
