@@ -6,27 +6,46 @@ import (
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/config"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/delivery/controller"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/delivery/middleware"
-	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/repository"
-	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/manager"
+	"github.com/sirupsen/logrus"
 	"log"
 )
 
 type Server struct {
-	brandUC       usecase.BrandUseCase
-	vehicleUC     usecase.VehicleUseCase
-	customerUC    usecase.CustomerUseCase
-	transactionUC usecase.TransactionUseCase
-	engine        *gin.Engine
-	host          string
+	ucManager manager.UseCaseManager
+	engine    *gin.Engine
+	host      string
+	log       *logrus.Logger
 }
 
 func (s *Server) initController() {
 	// add middleware
-	s.engine.Use(middleware.LogRequestMiddleware())
-	controller.NewBrandController(s.engine, s.brandUC)
-	controller.NewVehicleController(s.engine, s.vehicleUC)
-	controller.NewCustomerController(s.engine, s.customerUC)
-	controller.NewTransactionController(s.engine, s.transactionUC)
+	s.engine.Use(middleware.LogRequestMiddleware(s.log))
+	controller.NewBrandController(s.engine, s.ucManager.BrandUseCase())
+	controller.NewVehicleController(s.engine, s.ucManager.VehicleUseCase())
+	controller.NewCustomerController(s.engine, s.ucManager.CustomerUseCase())
+	controller.NewTransactionController(s.engine, s.ucManager.TransactionUseCase())
+}
+
+func NewServer() *Server {
+	cfg, err := config.NewConfig()
+	if err != nil {
+		log.Printf("failed to serve config :%s", err)
+	}
+	infra, err := manager.NewInfraManager(cfg)
+	if err != nil {
+		log.Printf("failed connect to infra  :%s", err)
+	}
+	repo := manager.NewRepositoryManager(infra)
+	uc := manager.NewUseCaseManager(repo)
+	r := gin.Default()
+	host := fmt.Sprintf("%s:%s", cfg.ApiHost, cfg.ApiPort)
+	return &Server{
+		ucManager: uc,
+		engine:    r,
+		host:      host,
+		log:       infra.Log(),
+	}
 }
 
 func (s *Server) Run() {
@@ -35,41 +54,4 @@ func (s *Server) Run() {
 	if err != nil {
 		log.Printf("failed to run server :%s", err)
 	}
-}
-
-func NewServer() *Server {
-	cfg, err := config.NewConfig()
-	if err != nil {
-		log.Printf("failed to serve config :%s", err)
-	}
-
-	dbConn, err := config.NewDbConnection(cfg)
-	if err != nil {
-		log.Printf("failed to serve connection :%s", err)
-	}
-
-	db := dbConn.Conn()
-	r := gin.Default()
-	brandRepo := repository.NewBrandRepository(db)
-	vehicleRepo := repository.NewVehicleRepository(db)
-	customerRepo := repository.NewCustomerRepository(db)
-	employeeRepo := repository.NewEmployeeRepository(db)
-	transactionRepo := repository.NewTransactionRepository(db)
-	userRepo := repository.NewUserRepository(db)
-	brandUc := usecase.NewBrandUseCase(brandRepo)
-	vehicleUC := usecase.NewVehicleUseCase(vehicleRepo, brandUc)
-	userUC := usecase.NewUserUseCase(userRepo)
-	customerUC := usecase.NewCustomerUseCase(customerRepo, userUC)
-	employeeUC := usecase.NewEmployeeUseCase(employeeRepo)
-	transactionUC := usecase.NewTransactionUseCase(transactionRepo, vehicleUC, employeeUC, customerUC)
-	host := fmt.Sprintf("%s:%s", cfg.ApiHost, cfg.ApiPort)
-	return &Server{
-		brandUC:       brandUc,
-		vehicleUC:     vehicleUC,
-		customerUC:    customerUC,
-		transactionUC: transactionUC,
-		engine:        r,
-		host:          host,
-	}
-
 }

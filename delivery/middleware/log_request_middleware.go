@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func LogRequestMiddleware() gin.HandlerFunc {
+func LogRequestMiddleware(logger *logrus.Logger) gin.HandlerFunc {
 	cfg, err := config.NewConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -20,8 +20,6 @@ func LogRequestMiddleware() gin.HandlerFunc {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// create a new instance logger
-	var logger = logrus.New()
 	// set output file
 	logger.SetOutput(file)
 	return func(c *gin.Context) {
