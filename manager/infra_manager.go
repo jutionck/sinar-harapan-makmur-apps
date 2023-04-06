@@ -14,12 +14,17 @@ type InfraManager interface {
 	Migrate(model ...any) error
 	Log() *logrus.Logger
 	LogFilePath() string
+	UploadPath() string
 }
 
 type infraManager struct {
 	db  *gorm.DB
 	cfg *config.Config
 	log *logrus.Logger
+}
+
+func (i *infraManager) UploadPath() string {
+	return i.cfg.UploadPath
 }
 
 func (i *infraManager) Log() *logrus.Logger {

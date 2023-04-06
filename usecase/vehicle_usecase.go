@@ -3,6 +3,8 @@ package usecase
 import (
 	"fmt"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model/dto"
+	"mime/multipart"
+	"strings"
 
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/repository"
@@ -12,11 +14,30 @@ type VehicleUseCase interface {
 	BaseUseCase[model.Vehicle]
 	BaseUseCasePaging[model.Vehicle]
 	UpdateVehicleStock(count int, id string) error
+	UploadImage(payload *model.Vehicle, file multipart.File, fileExt string) error
 }
 
 type vehicleUseCase struct {
 	repo         repository.VehicleRepository
 	brandUseCase BrandUseCase
+	fileUseCase  FileUseCase
+}
+
+func (v *vehicleUseCase) UploadImage(payload *model.Vehicle, file multipart.File, fileExt string) error {
+	// nama file -> img-{model}-{productionYear}.png
+	modelYear := fmt.Sprintf("%s-%d", payload.Model, payload.ProductionYear)
+	fileName := fmt.Sprintf("img-%s.%s", strings.ToLower(modelYear), fileExt)
+	fileLocation, err := v.fileUseCase.Save(file, fileName)
+	if err != nil {
+		return err
+	}
+	payload.ImgPath = fileLocation
+	payload.UrlPath = fmt.Sprintf("/media/%s", strings.ToLower(modelYear))
+	err = v.SaveData(payload)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (v *vehicleUseCase) SearchBy(by map[string]interface{}) ([]model.Vehicle, error) {
@@ -73,6 +94,13 @@ func (v *vehicleUseCase) Pagination(requestQueryParams dto.RequestQueryParams) (
 	return v.repo.Paging(requestQueryParams)
 }
 
-func NewVehicleUseCase(repo repository.VehicleRepository, brandUseCase BrandUseCase) VehicleUseCase {
-	return &vehicleUseCase{repo: repo, brandUseCase: brandUseCase}
+func NewVehicleUseCase(
+	repo repository.VehicleRepository,
+	brandUseCase BrandUseCase,
+	fileUseCase FileUseCase,
+) VehicleUseCase {
+	return &vehicleUseCase{
+		repo: repo, brandUseCase: brandUseCase,
+		fileUseCase: fileUseCase,
+	}
 }

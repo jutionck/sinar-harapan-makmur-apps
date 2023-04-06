@@ -11,6 +11,7 @@ type ApiConfig struct {
 	ApiPort string
 	ApiHost string
 }
+
 type DbConfig struct {
 	Host     string
 	Port     string
@@ -20,8 +21,9 @@ type DbConfig struct {
 }
 
 type FileConfig struct {
-	LogPath string
-	Env     string
+	UploadPath string
+	LogPath    string
+	Env        string
 }
 
 type Config struct {
@@ -50,13 +52,15 @@ func (c *Config) ReadConfigFile() error {
 	}
 
 	c.FileConfig = FileConfig{
-		Env:     os.Getenv("ENV"),
-		LogPath: os.Getenv("LOG_PATH"),
+		Env:        os.Getenv("ENV"),
+		LogPath:    os.Getenv("LOG_PATH"),
+		UploadPath: os.Getenv("UPLOAD_PATH"),
 	}
 
 	if c.DbConfig.Host == "" || c.DbConfig.Port == "" || c.DbConfig.Name == "" ||
 		c.DbConfig.User == "" || c.DbConfig.Password == "" || c.ApiConfig.ApiHost == "" ||
-		c.ApiConfig.ApiPort == "" || c.FileConfig.Env == "" || c.FileConfig.LogPath == "" {
+		c.ApiConfig.ApiPort == "" || c.FileConfig.Env == "" || c.FileConfig.LogPath == "" ||
+		c.FileConfig.UploadPath == "" {
 		return errors.New("missing required environment variables")
 	}
 	return nil

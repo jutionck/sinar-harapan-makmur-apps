@@ -12,10 +12,15 @@ type UseCaseManager interface {
 	EmployeeUseCase() usecase.EmployeeUseCase
 	UserUseCase() usecase.UserUseCase
 	TransactionUseCase() usecase.TransactionUseCase
+	FileUSeCase() usecase.FileUseCase
 }
 
 type useCaseManager struct {
 	repoManger RepositoryManager
+}
+
+func (u *useCaseManager) FileUSeCase() usecase.FileUseCase {
+	return usecase.NewFileUseCase(u.repoManger.FileRepo())
 }
 
 func (u *useCaseManager) BrandUseCase() usecase.BrandUseCase {
@@ -23,7 +28,11 @@ func (u *useCaseManager) BrandUseCase() usecase.BrandUseCase {
 }
 
 func (u *useCaseManager) VehicleUseCase() usecase.VehicleUseCase {
-	return usecase.NewVehicleUseCase(u.repoManger.VehicleRepo(), u.BrandUseCase())
+	return usecase.NewVehicleUseCase(
+		u.repoManger.VehicleRepo(),
+		u.BrandUseCase(),
+		u.FileUSeCase(),
+	)
 }
 
 func (u *useCaseManager) UserUseCase() usecase.UserUseCase {

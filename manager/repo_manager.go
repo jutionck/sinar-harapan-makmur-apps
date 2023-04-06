@@ -10,10 +10,15 @@ type RepositoryManager interface {
 	EmployeeRepo() repository.EmployeeRepository
 	UserRepo() repository.UserRepository
 	TransactionRepo() repository.TransactionRepository
+	FileRepo() repository.FileRepository
 }
 
 type repositoryManager struct {
 	infra InfraManager
+}
+
+func (r *repositoryManager) FileRepo() repository.FileRepository {
+	return repository.NewFileRepository(r.infra.UploadPath())
 }
 
 func (r *repositoryManager) BrandRepo() repository.BrandRepository {
