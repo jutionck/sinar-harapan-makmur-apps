@@ -33,3 +33,13 @@ func SendErrorResponse(c *gin.Context, code int, description string) {
 		Description: description,
 	})
 }
+
+func SendFileResponse(c *gin.Context, fileName string, description string) {
+	c.JSON(http.StatusOK, &FileResponse{
+		Status: Status{
+			Code:        http.StatusOK,
+			Description: description,
+		},
+		FileName: fileName,
+	})
+}

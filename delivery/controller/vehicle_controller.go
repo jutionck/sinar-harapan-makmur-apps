@@ -1,13 +1,16 @@
 package controller
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/delivery/api"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model/dto"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase"
+	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type VehicleController struct {
@@ -18,16 +21,27 @@ type VehicleController struct {
 
 func (v *VehicleController) createHandler(c *gin.Context) {
 	var payload model.Vehicle
-	if err := v.ParseRequestBody(c, &payload); err != nil {
-		v.NewFailedResponse(c, http.StatusBadRequest, err.Error())
-		return
+	vehicle := c.PostForm("vehicle")
+	vehicleImage, fileHeader, err := c.Request.FormFile("image")
+	if err != nil {
+		v.NewFailedResponse(c, http.StatusBadRequest, "Failed get file")
+	}
+	err = json.Unmarshal([]byte(vehicle), &payload)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	// 1-min.png
+	// joko.anwar.png
+	fileExtension := strings.Split(fileHeader.Filename, ".")
+	// .png, jpg
+	if fileExtension[1] == "png" || fileExtension[1] == "jpg" {
+
 	}
 
-	if err := v.useCase.SaveData(&payload); err != nil {
+	if err := v.useCase.UploadImage(&payload, vehicleImage, fileExtension[1]); err != nil {
 		v.NewFailedResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-
 	v.NewSuccessSingleResponse(c, payload, "OK")
 }
 

@@ -17,3 +17,8 @@ type PagedResponse struct {
 	Data   []interface{} `json:"data,omitempty"`
 	Paging dto.Paging    `json:"paging,omitempty"`
 }
+
+type FileResponse struct {
+	Status   Status `json:"status"`
+	FileName string `json:"fileName"`
+}
