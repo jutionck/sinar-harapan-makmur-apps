@@ -43,8 +43,7 @@ func (b *brandUseCase) SaveData(payload *model.Brand) error {
 		return err
 	}
 	// cek jika data sudah ada -> count > 0
-	err = b.repo.CountData(payload.Name, payload.ID)
-	if err != nil {
+	if err := b.repo.CountData(payload.Name, payload.ID); err != nil {
 		return err
 	}
 
