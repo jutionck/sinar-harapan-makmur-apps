@@ -4,7 +4,9 @@ import (
 	"errors"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/mock/mock_repo"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
+	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model/dto"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 	"testing"
@@ -147,6 +149,39 @@ func (suite *BrandUseCaseTestSuite) TestSaveDataFindById_Fail() {
 	err := useCase.SaveData(&brandDm)
 	assert.Error(suite.T(), err)
 	assert.Equal(suite.T(), "brand with ID 1 not found", err.Error())
+}
+
+func (suite *BrandUseCaseTestSuite) TestPagination_Success() {
+	brandDm := brandDummies
+	expectedPaging := dto.Paging{
+		Page:        1,
+		RowsPerPage: 5,
+		TotalRows:   5,
+		TotalPages:  1,
+	}
+	suite.repo.On("Paging", mock.AnythingOfType("dto.RequestQueryParams")).Return(brandDm, expectedPaging, nil)
+	useCase := NewBrandUseCase(suite.repo)
+	requestParams := dto.RequestQueryParams{QueryParams: dto.QueryParams{Sort: "asc"}}
+	actualBrand, actualPaging, actualError := useCase.Pagination(requestParams)
+	assert.Equal(suite.T(), brandDm, actualBrand)
+	assert.Equal(suite.T(), expectedPaging, actualPaging)
+	assert.Equal(suite.T(), nil, actualError)
+}
+
+func (suite *BrandUseCaseTestSuite) TestPagination_Fail() {
+	expectedPaging := dto.Paging{
+		Page:        0,
+		RowsPerPage: 0,
+		TotalRows:   0,
+		TotalPages:  0,
+	}
+	suite.repo.On("Paging", mock.AnythingOfType("dto.RequestQueryParams")).Return(nil, expectedPaging, errors.New("repo error"))
+	useCase := NewBrandUseCase(suite.repo)
+	requestParams := dto.RequestQueryParams{QueryParams: dto.QueryParams{Sort: "ABC"}}
+	_, actualPaging, actualError := useCase.Pagination(requestParams)
+	assert.Equal(suite.T(), expectedPaging, actualPaging)
+	assert.Error(suite.T(), actualError)
+	assert.Equal(suite.T(), "invalid sort by: ABC", actualError.Error())
 }
 
 func (suite *BrandUseCaseTestSuite) SetupTest() {

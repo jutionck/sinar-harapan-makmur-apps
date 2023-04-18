@@ -3,7 +3,6 @@ package mock_repo
 import (
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model"
 	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/model/dto"
-	"github.com/jutionck/golang-db-sinar-harapan-makmur-orm/utils/common"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -53,5 +52,6 @@ func (b *BrandRepoMock) CountData(fieldName string, id string) error {
 }
 
 func (b *BrandRepoMock) Paging(requestQueryParams dto.RequestQueryParams) ([]model.Brand, dto.Paging, error) {
-	return nil, common.Paginate(0, 0, 0), nil
+	args := b.Called(requestQueryParams)
+	return args.Get(0).([]model.Brand), args.Get(1).(dto.Paging), args.Error(2)
 }

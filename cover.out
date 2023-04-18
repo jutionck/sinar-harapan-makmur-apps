@@ -21,9 +21,9 @@ github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/brand_usecase.go:
 github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/brand_usecase.go:59.83,61.16 2 1
 github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/brand_usecase.go:61.16,63.3 1 1
 github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/brand_usecase.go:64.2,64.20 1 1
-github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/brand_usecase.go:67.113,68.51 1 0
-github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/brand_usecase.go:68.51,70.3 1 0
-github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/brand_usecase.go:71.2,71.42 1 0
+github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/brand_usecase.go:67.113,68.51 1 1
+github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/brand_usecase.go:68.51,70.3 1 1
+github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/brand_usecase.go:71.2,71.42 1 1
 github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/brand_usecase.go:74.68,76.2 1 1
 github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/customer_usecase.go:24.55,26.16 2 0
 github.com/jutionck/golang-db-sinar-harapan-makmur-orm/usecase/customer_usecase.go:26.16,28.3 1 0
