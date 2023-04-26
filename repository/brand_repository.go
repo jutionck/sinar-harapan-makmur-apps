@@ -24,7 +24,8 @@ func (b *brandRepository) Delete(id string) error {
 
 func (b *brandRepository) Get(id string) (*model.Brand, error) {
 	var brand model.Brand
-	result := b.db.Preload("Vehicles").First(&brand, "id=?", id).Error
+	//result := b.db.Preload("Vehicles").First(&brand, "id=?", id).Error
+	result := b.db.First(&brand, "id=?", id).Error
 	if result != nil {
 		return nil, result
 	}
@@ -33,7 +34,8 @@ func (b *brandRepository) Get(id string) (*model.Brand, error) {
 
 func (b *brandRepository) List() ([]model.Brand, error) {
 	var brands []model.Brand
-	result := b.db.Preload("Vehicles").Find(&brands).Error
+	//result := b.db.Preload("Vehicles").Find(&brands).Error
+	result := b.db.Find(&brands).Error
 	if result != nil {
 		return nil, result
 	}
@@ -47,6 +49,7 @@ func (b *brandRepository) Save(payload *model.Brand) error {
 func (b *brandRepository) Search(by map[string]interface{}) ([]model.Brand, error) {
 	var brands []model.Brand
 	result := b.db.Preload("Vehicles").Where(by).Find(&brands).Error
+	//result := b.db.Where(by).Find(&brands).Error
 	if result != nil {
 		return nil, result
 	}
