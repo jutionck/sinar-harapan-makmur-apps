@@ -12,8 +12,6 @@ type BrandRepository interface {
 	BaseRepository[model.Brand]
 	BaseRepositoryCount[model.Brand]
 	BaseRepositoryPaging[model.Brand]
-	//ListBrandWithVehicle() ([]model.Brand, error)
-	//GetBrandWithVehicle(brandId string) (*model.Brand, error)
 }
 
 type brandRepository struct {
@@ -54,24 +52,6 @@ func (b *brandRepository) Search(by map[string]interface{}) ([]model.Brand, erro
 	}
 	return brands, nil
 }
-
-//func (b *brandRepository) GetBrandWithVehicle(brandId string) (*model.Brand, error) {
-//	var brand model.Brand
-//	result := b.db.Preload("Brand").First(&brand, "id=?", brandId).Error
-//	if result != nil {
-//		return nil, result
-//	}
-//	return &brand, nil
-//}
-//
-//func (b *brandRepository) ListBrandWithVehicle() ([]model.Brand, error) {
-//	var brands []model.Brand
-//	result := b.db.Preload("Brand").Find(&brands).Error
-//	if result != nil {
-//		return nil, result
-//	}
-//	return brands, nil
-//}
 
 func (b *brandRepository) CountData(fieldName string, id string) error {
 	var count int64
