@@ -161,3 +161,23 @@ func (suite *BrandRepoTestSuite) TestSearchBrand_Fail() {
 	assert.Nil(suite.T(), brands)
 	assert.Error(suite.T(), err)
 }
+
+func (suite *BrandRepoTestSuite) TestDeleteBrand_Success() {
+	suite.mock.ExpectBegin()
+	expectedQuery := `UPDATE "mst_brand"`
+	suite.mock.ExpectExec(expectedQuery).WillReturnResult(sqlmock.NewResult(1, 1))
+	suite.mock.ExpectCommit()
+	repo := NewBrandRepository(suite.mockDb)
+	err := repo.Delete("1")
+	assert.Nil(suite.T(), err)
+}
+
+func (suite *BrandRepoTestSuite) TestDeleteBrand_Fail() {
+	suite.mock.ExpectBegin()
+	expectedQuery := `UPDATE "mst_brand"`
+	suite.mock.ExpectExec(expectedQuery).WillReturnError(errors.New("db error"))
+	suite.mock.ExpectRollback()
+	repo := NewBrandRepository(suite.mockDb)
+	err := repo.Delete("1")
+	assert.Error(suite.T(), err)
+}
