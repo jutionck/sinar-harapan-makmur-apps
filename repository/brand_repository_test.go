@@ -77,6 +77,8 @@ func (suite *BrandRepoTestSuite) TestListBrand_Success() {
 	}
 	expectedQuery := `SELECT (.+) FROM "mst_brand"`
 	suite.mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	expectedVehicleQuery := `SELECT * FROM "mst_vehicle" WHERE "mst_vehicle"."brand_id" IN ($1,$2,$3)`
+	suite.mock.ExpectQuery(regexp.QuoteMeta(expectedVehicleQuery)).WillReturnRows(rows)
 	repo := NewBrandRepository(suite.mockDb)
 	brands, err := repo.List()
 	assert.Equal(suite.T(), brandDummies, brands)
@@ -105,6 +107,8 @@ func (suite *BrandRepoTestSuite) TestGetBrand_Success() {
 	suite.mock.ExpectQuery(regexp.QuoteMeta(expectedQuery)).WithArgs(brandRowDummies.ID).WillReturnRows(rows)
 	//expectedQuery := `SELECT (.+) FROM "mst_brand" WHERE id(\s*)=(\s*)\$1 AND "mst_brand"."deleted_at" IS NULL ORDER BY "mst_brand"."id" LIMIT 1`
 	//suite.mock.ExpectQuery(expectedQuery).WithArgs(brandRowDummies.ID).WillReturnRows(rows)
+	expectedVehicleQuery := `SELECT * FROM "mst_vehicle" WHERE "mst_vehicle"."brand_id" = $1`
+	suite.mock.ExpectQuery(regexp.QuoteMeta(expectedVehicleQuery)).WillReturnRows(rows)
 	repo := NewBrandRepository(suite.mockDb)
 	brand, err := repo.Get(brandRowDummies.ID)
 	assert.Equal(suite.T(), brandRowDummies, *brand)
@@ -134,8 +138,8 @@ func (suite *BrandRepoTestSuite) TestSearchBrand_Success() {
 	//expectedQuery := `SELECT \* FROM "mst_brand" WHERE \"name\"(\s*)=(\s*)\$1 AND "mst_brand"."deleted_at" IS NULL`
 	expectedQuery := `SELECT * FROM "mst_brand" WHERE "name" = $1 AND "mst_brand"."deleted_at" IS NULL`
 	suite.mock.ExpectQuery(regexp.QuoteMeta(expectedQuery)).WithArgs("Honda").WillReturnRows(rows)
-	expectedVehcileQuery := `SELECT * FROM "mst_vehicle" WHERE "mst_vehicle"."brand_id" IN ($1,$2,$3)`
-	suite.mock.ExpectQuery(regexp.QuoteMeta(expectedVehcileQuery)).WillReturnRows(rows)
+	expectedVehicleQuery := `SELECT * FROM "mst_vehicle" WHERE "mst_vehicle"."brand_id" IN ($1,$2,$3)`
+	suite.mock.ExpectQuery(regexp.QuoteMeta(expectedVehicleQuery)).WillReturnRows(rows)
 	repo := NewBrandRepository(suite.mockDb)
 	filter := map[string]interface{}{"name": "Honda"}
 	brands, err := repo.Search(filter)
